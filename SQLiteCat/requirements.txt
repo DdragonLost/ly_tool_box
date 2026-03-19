@@ -1,0 +1,4 @@
+#
+# SQLiteCat 仅依赖 Python 标准库（sqlite3、tkinter）。
+# 该文件保留为空，方便未来按需添加依赖。
+#

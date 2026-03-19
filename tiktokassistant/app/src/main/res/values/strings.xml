@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">tiktokassistant</string>
+    <string name="accessibility_service_description">无障碍上/下滑助手（通用手势）</string>
+</resources>
