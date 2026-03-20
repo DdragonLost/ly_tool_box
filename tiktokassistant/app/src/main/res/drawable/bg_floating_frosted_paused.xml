@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 外层半透明灰色，制造“毛玻璃”观感 -->
+    <item>
+        <shape android:shape="oval">
+            <gradient
+                android:type="radial"
+                android:centerX="35%"
+                android:centerY="30%"
+                android:gradientRadius="28dp"
+                android:startColor="#B3BDBDBD"
+                android:centerColor="#8BB0B0B0"
+                android:endColor="#689E9E9E" />
+        </shape>
+    </item>
+
+    <!-- 内层高光与描边 -->
+    <item android:left="1dp" android:top="1dp" android:right="1dp" android:bottom="1dp">
+        <shape android:shape="oval">
+            <solid android:color="#22FFFFFF" />
+            <stroke
+                android:width="1dp"
+                android:color="#55FFFFFF" />
+        </shape>
+    </item>
+</layer-list>

@@ -11,6 +11,8 @@ import android.content.SharedPreferences
 import android.content.pm.ServiceInfo
 import android.graphics.Color
 import android.graphics.PixelFormat
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -20,6 +22,7 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
@@ -32,6 +35,7 @@ class FloatingService : Service() {
     private var windowManager: WindowManager? = null
     private var floatingView: View? = null
     private var floatingImageView: ImageView? = null
+    private var floatingBackgroundView: View? = null
     private var params: WindowManager.LayoutParams? = null
     private var prefs: SharedPreferences? = null
 
@@ -70,20 +74,24 @@ class FloatingService : Service() {
     }
 
     private fun updateFloatingIconState() {
-        val view = floatingImageView ?: return
+        val iconView = floatingImageView ?: return
+        val bgView = floatingBackgroundView ?: return
         val running = prefs?.getBoolean(SettingsPrefs.KEY_SWIPE_RUNNING, false) == true
         if (running) {
-            view.setBackgroundColor(Color.parseColor("#4CAF50"))
-            view.setImageResource(android.R.drawable.ic_media_play)
-            view.setColorFilter(Color.WHITE)
-            view.contentDescription = "运行中-点击停止"
+            bgView.setBackgroundResource(R.drawable.bg_floating_frosted_running)
+            iconView.setImageResource(R.drawable.ic_floating_pause)
+            // 白色毛玻璃按钮：中间改用灰色图标（反色）
+            iconView.setColorFilter(Color.parseColor("#B0B0B0"))
+            iconView.contentDescription = "运行中-点击暂停"
         } else {
-            view.setBackgroundResource(android.R.drawable.btn_default)
-            view.setImageResource(android.R.drawable.ic_menu_compass)
-            view.setColorFilter(null)
-            view.contentDescription = "已停止-点击开始"
+            bgView.setBackgroundResource(R.drawable.bg_floating_frosted_paused)
+            iconView.setImageResource(R.drawable.ic_floating_play)
+            // 灰色毛玻璃按钮：中间改用白色图标（反色）
+            iconView.setColorFilter(Color.parseColor("#FFFFFF"))
+            iconView.contentDescription = "已暂停-点击开始"
         }
-        view.invalidate()
+        iconView.invalidate()
+        bgView.invalidate()
     }
 
     private fun createNotification(): Notification {
@@ -114,7 +122,8 @@ class FloatingService : Service() {
             return
         }
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        val size = (48 * resources.displayMetrics.density).toInt()
+        // 按你的要求：从原本 48dp 缩到 2/3 => 32dp
+        val size = (32 * resources.displayMetrics.density).toInt()
         params = WindowManager.LayoutParams(
             size,
             size,
@@ -128,18 +137,32 @@ class FloatingService : Service() {
             y = 200
         }
 
-        val view = ImageView(this).apply {
-            setImageResource(android.R.drawable.ic_menu_compass)
-            setBackgroundResource(android.R.drawable.btn_default)
-            setPadding(4, 4, 4, 4)
-            setOnClickListener {
-                toggleSwipe()
+        val container = FrameLayout(this).apply {
+            isClickable = true
+            isFocusable = false
+        }
+
+        val bgView = View(this).apply {
+            setBackgroundResource(R.drawable.bg_floating_frosted_paused)
+            // 轻微模糊（仅模糊该 View 自己的内容），叠加半透明背景产生“毛玻璃”观感。
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                setRenderEffect(RenderEffect.createBlurEffect(14f, 14f, Shader.TileMode.CLAMP))
             }
         }
 
+        val iconView = ImageView(this).apply {
+            setImageResource(R.drawable.ic_floating_play)
+            setBackgroundColor(Color.TRANSPARENT)
+            scaleType = ImageView.ScaleType.CENTER
+            setColorFilter(Color.parseColor("#666666"))
+        }
+
+        container.addView(bgView, FrameLayout.LayoutParams(size, size))
+        container.addView(iconView, FrameLayout.LayoutParams(size, size, Gravity.CENTER))
+
         var hasMoved = false
         val touchSlop = (4 * resources.displayMetrics.density).toInt()
-        view.setOnTouchListener { v, event ->
+        container.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     initialX = params!!.x
@@ -147,6 +170,8 @@ class FloatingService : Service() {
                     initialTouchX = event.rawX
                     initialTouchY = event.rawY
                     hasMoved = false
+                    // 吸收事件：避免子 View / Click 分发导致状态切换不稳定
+                    return@setOnTouchListener true
                 }
                 MotionEvent.ACTION_MOVE -> {
                     val dx = (event.rawX - initialTouchX).toInt()
@@ -154,17 +179,27 @@ class FloatingService : Service() {
                     if (kotlin.math.abs(dx) > touchSlop || kotlin.math.abs(dy) > touchSlop) hasMoved = true
                     params!!.x = initialX + dx
                     params!!.y = initialY + dy
-                    windowManager?.updateViewLayout(view, params)
+                    windowManager?.updateViewLayout(container, params)
+                    return@setOnTouchListener true
+                }
+                MotionEvent.ACTION_UP -> {
+                    // 未拖动才当作“点击”，触发开始/暂停
+                    if (!hasMoved) toggleSwipe()
+                    return@setOnTouchListener true
+                }
+                MotionEvent.ACTION_CANCEL -> {
+                    return@setOnTouchListener true
                 }
             }
-            hasMoved
+            true
         }
 
-        floatingView = view
-        floatingImageView = view
+        floatingView = container
+        floatingImageView = iconView
+        floatingBackgroundView = bgView
         try {
-            windowManager?.addView(view, params)
-            view.post {
+            windowManager?.addView(container, params)
+            container.post {
                 updateFloatingIconState()
                 statusHandler.post(statusUpdater)
             }
@@ -182,11 +217,13 @@ class FloatingService : Service() {
         }
         floatingView = null
         floatingImageView = null
+        floatingBackgroundView = null
     }
 
     private fun toggleSwipe() {
         val p = prefs ?: return
         if (!isAccessibilityServiceEnabled()) {
+            android.util.Log.e("FloatingService", "toggleSwipe：无障碍服务未启用，blocked")
             Toast.makeText(this, "请先在系统无障碍里开启本助手服务", Toast.LENGTH_LONG).show()
             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             return
@@ -194,6 +231,9 @@ class FloatingService : Service() {
         val running = p.getBoolean(SettingsPrefs.KEY_SWIPE_RUNNING, false)
         if (running) {
             p.edit().putBoolean(SettingsPrefs.KEY_SWIPE_RUNNING, false).apply()
+            // 取消“待启动”的参数（如果无障碍服务尚未连接/在另一个进程里，还能阻止 onServiceConnected 启动）
+            p.edit().putBoolean(SettingsPrefs.KEY_PENDING_START, false).apply()
+            android.util.Log.e("FloatingService", "toggleSwipe：停止（KEY_SWIPE_RUNNING=false, KEY_PENDING_START=false）")
             MyAccessibilityService.stopSwipe()
             updateFloatingIconState()
             Toast.makeText(this, "已停止滑动", Toast.LENGTH_SHORT).show()
@@ -210,6 +250,20 @@ class FloatingService : Service() {
         } else {
             MyAccessibilityService.Direction.DOWN
         }
+
+        // 写入待启动参数：即使当前 moment `instance` 还没连接上，onServiceConnected 也能读到并启动。
+        p.edit()
+            .putBoolean(SettingsPrefs.KEY_PENDING_START, true)
+            .putString(SettingsPrefs.KEY_PENDING_DIRECTION, direction.name)
+            .putLong(SettingsPrefs.KEY_PENDING_INTERVAL_MS, intervalSec * 1000L)
+            .putLong(SettingsPrefs.KEY_PENDING_DURATION_SEC, durationSec)
+            .putInt(SettingsPrefs.KEY_PENDING_COUNT, count)
+            .apply()
+        android.util.Log.e(
+            "FloatingService",
+            "toggleSwipe：开始（KEY_SWIPE_RUNNING=true, pendingStart=true, direction=${direction.name}, intervalMs=${intervalSec * 1000L}, durationSec=$durationSec, count=$count）"
+        )
+
         MyAccessibilityService.startSwipe(
             direction = direction,
             intervalMs = intervalSec * 1000L,
@@ -221,12 +275,29 @@ class FloatingService : Service() {
     }
 
     private fun isAccessibilityServiceEnabled(): Boolean {
-        val expected = ComponentName(this, MyAccessibilityService::class.java).flattenToString()
+        val componentName = ComponentName(this, MyAccessibilityService::class.java)
+        val expected = componentName.flattenToString()
+        val className = MyAccessibilityService::class.java.name
+        val simpleName = MyAccessibilityService::class.java.simpleName
         val enabledServices = Settings.Secure.getString(
             contentResolver,
             Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         ) ?: return false
-        return enabledServices.split(':').any { it.equals(expected, ignoreCase = true) }
+        android.util.Log.e(
+            "FloatingService",
+            "isAccessibilityServiceEnabled：enabledServices=$enabledServices expected=$expected className=$className simpleName=$simpleName"
+        )
+        return enabledServices.split(':').any { entry ->
+            val e = entry.trim()
+            e.equals(expected, ignoreCase = true) ||
+                // 常见简写：com.xxx/.MyAccessibilityService
+                e.equals("${componentName.packageName}/.${simpleName}", ignoreCase = true) ||
+                // 另一种形式：com.xxx/com.xxx.MyAccessibilityService
+                e.equals("${componentName.packageName}/${className}", ignoreCase = true) ||
+                // 兜底：包含类名
+                e.contains(className, ignoreCase = true) ||
+                e.contains(simpleName, ignoreCase = true)
+        }
     }
 
     companion object {
