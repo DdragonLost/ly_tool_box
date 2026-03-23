@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="无障碍上/下滑助手（仅执行通用手势）"
+        android:text="抖音助手"
         android:textSize="16sp" />
 
     <RadioGroup
@@ -108,7 +108,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="提示：需要先在系统“无障碍”里开启本助手服务。"
+        android:text="@string/hint_desc"
         android:textSize="12sp"
         android:layout_marginTop="16dp" />
 </LinearLayout>

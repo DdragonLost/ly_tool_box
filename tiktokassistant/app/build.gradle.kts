@@ -12,7 +12,7 @@ android {
         minSdk = 29
         targetSdk = 35
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -36,6 +36,14 @@ android {
             isMinifyEnabled = false
             isShrinkResources = false
             isZipAlignEnabled = true
+            
+            // 自定义 APK 文件名格式：assistant_versionName.apk
+            applicationVariants.all {
+                outputs.forEach { output ->
+                    val outputImpl = output as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+                    outputImpl.outputFileName = "assistant_${versionName}.apk"
+                }
+            }
         }
     }
 

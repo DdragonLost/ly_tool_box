@@ -98,7 +98,7 @@ class FloatingService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "悬浮球服务",
+                "抖音助手",
                 NotificationManager.IMPORTANCE_LOW
             ).apply { setShowBadge(false) }
             (getSystemService(NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(channel)
@@ -109,7 +109,7 @@ class FloatingService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("滑动小助手")
+            .setContentTitle("抖音助手")
             .setContentText("悬浮球已开启，点击可开始/停止")
             .setSmallIcon(android.R.drawable.ic_menu_compass)
             .setContentIntent(openApp)
