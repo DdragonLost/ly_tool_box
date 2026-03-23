@@ -17,15 +17,28 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+    signingConfigs {
+        create("release") {
+            storeFile = file("keystore.jks")
+            storePassword = "yanjing@528998"
+            keyAlias = "tiktokassistant"
+            keyPassword = "yanjing@528998"
         }
     }
+
+    buildTypes {
+        getByName("debug") {
+            signingConfig = signingConfigs.getByName("release")
+            isDebuggable = true
+        }
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+            isShrinkResources = false
+            isZipAlignEnabled = true
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
