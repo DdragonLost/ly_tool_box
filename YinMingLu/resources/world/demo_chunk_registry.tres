@@ -1,0 +1,29 @@
+[gd_resource type="Resource" load_steps=8 format=3 uid="uid://demochunkreg01"]
+
+[ext_resource type="Script" path="res://scripts/world/chunk_npc_spawn.gd" id="1_spawn"]
+[ext_resource type="Script" path="res://scripts/world/chunk_definition.gd" id="2_def"]
+[ext_resource type="Script" path="res://scripts/world/chunk_registry.gd" id="3_reg"]
+[ext_resource type="PackedScene" uid="uid://cnpcplaceholder01" path="res://scenes/characters/npc_placeholder.tscn" id="4_npc"]
+[ext_resource type="PackedScene" uid="uid://trainingdummy01" path="res://scenes/enemies/training_dummy.tscn" id="5_dummy"]
+
+[sub_resource type="Resource" id="spawn_village"]
+script = ExtResource("1_spawn")
+npc_scene = ExtResource("4_npc")
+local_position = Vector3(5, 0, -5)
+rotation_y_degrees = 90.0
+
+[sub_resource type="Resource" id="spawn_dummy"]
+script = ExtResource("1_spawn")
+npc_scene = ExtResource("5_dummy")
+local_position = Vector3(-6, 0, 4)
+rotation_y_degrees = 0.0
+
+[sub_resource type="Resource" id="def_east"]
+script = ExtResource("2_def")
+chunk_coord = Vector2i(1, 0)
+npc_spawns = [SubResource("spawn_village")]
+enemy_spawns = [SubResource("spawn_dummy")]
+
+[resource]
+script = ExtResource("3_reg")
+chunks = [SubResource("def_east")]

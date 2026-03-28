@@ -1,0 +1,38 @@
+[gd_scene load_steps=2 format=3 uid="uid://dqvirtualjoy01"]
+
+[ext_resource type="Script" path="res://scripts/ui/virtual_joystick.gd" id="1_vj"]
+
+[node name="VirtualJoystick" type="Control"]
+custom_minimum_size = Vector2(220, 220)
+layout_mode = 3
+anchors_preset = 3
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_left = 28.0
+offset_top = -248.0
+offset_right = 248.0
+offset_bottom = -28.0
+grow_horizontal = 0
+grow_vertical = 0
+script = ExtResource("1_vj")
+
+[node name="Ring" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.12, 0.13, 0.16, 0.5)
+
+[node name="Knob" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 86.0
+offset_top = 86.0
+offset_right = 134.0
+offset_bottom = 134.0
+mouse_filter = 2
+color = Color(0.88, 0.89, 0.93, 0.82)

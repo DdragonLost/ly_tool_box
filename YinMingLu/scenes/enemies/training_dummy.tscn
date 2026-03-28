@@ -1,0 +1,44 @@
+[gd_scene load_steps=6 format=3 uid="uid://trainingdummy01"]
+
+[ext_resource type="Script" path="res://scripts/enemies/training_dummy.gd" id="1_td"]
+[ext_resource type="Script" path="res://scripts/combat/hurt_box.gd" id="2_hb"]
+
+[sub_resource type="BoxShape3D" id="BoxBody"]
+size = Vector3(0.85, 1.8, 0.55)
+
+[sub_resource type="BoxMesh" id="BoxMesh1"]
+size = Vector3(0.85, 1.8, 0.55)
+
+[sub_resource type="StandardMaterial3D" id="MatWood"]
+albedo_color = Color(0.42, 0.3, 0.18, 1)
+roughness = 0.85
+
+[sub_resource type="BoxShape3D" id="BoxHurt"]
+size = Vector3(0.95, 1.95, 0.65)
+
+[node name="TrainingDummy" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1_td")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("BoxBody")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("BoxMesh1")
+material_override = SubResource("MatWood")
+
+[node name="HurtBox" type="Area3D" parent="."]
+script = ExtResource("2_hb")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HurtBox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("BoxHurt")
+
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.05, 0)
+text = "木桩"
+font_size = 18
+outline_size = 5

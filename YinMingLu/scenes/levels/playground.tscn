@@ -1,0 +1,98 @@
+[gd_scene load_steps=15 format=3 uid="uid://b7playground1yin"]
+
+[ext_resource type="Script" path="res://scripts/levels/playground.gd" id="1_pg"]
+[ext_resource type="Script" path="res://scripts/world/world_streamer.gd" id="2_ws"]
+[ext_resource type="PackedScene" uid="uid://c8chunkterr01" path="res://scenes/world/chunk_terrain.tscn" id="3_chunk"]
+[ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="4_pc"]
+[ext_resource type="PackedScene" uid="uid://bkmobilehud01" path="res://scenes/ui/mobile_hud.tscn" id="5_hud"]
+[ext_resource type="Resource" uid="uid://demochunkreg01" path="res://resources/world/demo_chunk_registry.tres" id="6_reg"]
+[ext_resource type="PackedScene" uid="uid://cnpcplaceholder01" path="res://scenes/characters/npc_placeholder.tscn" id="7_npc"]
+[ext_resource type="PackedScene" uid="uid://interacthint01" path="res://scenes/ui/interact_hint.tscn" id="8_hint"]
+[ext_resource type="Script" path="res://scripts/combat/melee_hitbox.gd" id="9_mh"]
+
+[sub_resource type="ProceduralSkyMaterial" id="SkyMat"]
+sky_top_color = Color(0.12, 0.14, 0.22, 1)
+sky_horizon_color = Color(0.25, 0.22, 0.28, 1)
+ground_bottom_color = Color(0.08, 0.07, 0.09, 1)
+ground_horizon_color = Color(0.2, 0.18, 0.22, 1)
+
+[sub_resource type="Sky" id="Sky1"]
+sky_material = SubResource("SkyMat")
+
+[sub_resource type="Environment" id="Env1"]
+background_mode = 2
+sky = SubResource("Sky1")
+ambient_light_source = 2
+ambient_light_color = Color(0.45, 0.48, 0.55, 1)
+ambient_light_energy = 0.35
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShapePlayer"]
+radius = 0.35
+height = 1.6
+
+[sub_resource type="CapsuleMesh" id="CapsuleMeshPlayer"]
+radius = 0.35
+height = 1.6
+
+[sub_resource type="BoxShape3D" id="MeleeHitboxShape"]
+size = Vector3(1.35, 0.5, 0.72)
+
+[node name="Playground" type="Node3D"]
+script = ExtResource("1_pg")
+
+[node name="WorldStreamer" type="Node3D" parent="."]
+script = ExtResource("2_ws")
+chunk_scene = ExtResource("3_chunk")
+chunk_registry = ExtResource("6_reg")
+default_npc_scene = ExtResource("7_npc")
+chunk_size = 24.0
+load_radius = 2
+unload_padding = 1
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env1")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 6, 10, 4)
+light_energy = 1.15
+shadow_enabled = true
+
+[node name="Player" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("4_pc")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+shape = SubResource("CapsuleShapePlayer")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Player"]
+mesh = SubResource("CapsuleMeshPlayer")
+
+[node name="AttackPivot" type="Node3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+
+[node name="MeleeHitbox" type="Area3D" parent="Player/AttackPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.82)
+collision_layer = 8
+collision_mask = 16
+script = ExtResource("9_mh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player/AttackPivot/MeleeHitbox"]
+shape = SubResource("MeleeHitboxShape")
+
+[node name="CameraPivot" type="Node3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 1.6, 3.2)
+
+[node name="Camera3D" type="Camera3D" parent="Player/CameraPivot"]
+fov = 55.0
+
+[node name="MobileHud" parent="." instance=ExtResource("5_hud")]
+
+[node name="InteractHint" parent="." instance=ExtResource("8_hint")]
+
+[node name="Hint" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, -6)
+text = "探索块与位置自动存档 (user://progress_v1.cfg) · 换块/退出时写入"
+font_size = 20
+outline_size = 6

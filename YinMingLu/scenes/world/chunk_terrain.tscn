@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8chunkterr01"]
+
+[ext_resource type="Script" path="res://scripts/world/chunk_terrain.gd" id="1_ct"]
+
+[node name="ChunkTerrain" type="Node3D"]
+script = ExtResource("1_ct")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]

@@ -1,0 +1,68 @@
+[gd_scene load_steps=3 format=3 uid="uid://bkmobilehud01"]
+
+[ext_resource type="Script" path="res://scripts/ui/mobile_hud.gd" id="1_mh"]
+[ext_resource type="PackedScene" uid="uid://dqvirtualjoy01" path="res://scenes/ui/virtual_joystick.tscn" id="2_vj"]
+
+[node name="MobileHud" type="CanvasLayer"]
+layer = 100
+script = ExtResource("1_mh")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="VirtualJoystick" parent="Root" instance=ExtResource("2_vj")]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_left = 28.0
+offset_top = -248.0
+offset_right = 248.0
+offset_bottom = -28.0
+
+[node name="BtnInteract" type="Button" parent="Root"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -148.0
+offset_right = 50.0
+offset_bottom = -48.0
+grow_horizontal = 0
+grow_vertical = 0
+focus_mode = 0
+disabled = true
+theme_override_font_sizes/font_size = 22
+text = "谈"
+
+[node name="BtnAttack" type="Button" parent="Root"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(112, 112)
+layout_mode = 1
+anchors_preset = 4
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -148.0
+offset_top = -148.0
+offset_right = -36.0
+offset_bottom = -36.0
+grow_horizontal = 0
+grow_vertical = 0
+focus_mode = 0
+theme_override_font_sizes/font_size = 22
+text = "攻"
